@@ -9,7 +9,6 @@ This is a **template repository**. [Use this template](https://github.com/new?te
 - [What the code does](#what-the-code-does)
 - [Getting Started](#getting-started)
 - [Using This as a Template](#using-this-as-a-template)
-- [Repository Structure](#repository-structure)
 
 ---
 
