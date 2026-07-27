@@ -8,8 +8,7 @@ function doPost(e) {
   try {
     switch (u.type) {
       case 'message':
-      case 'edited_message':        return handleMessage(u[u.type]);
-      case 'callback_query':        return handleCallback(u.callback_query);
+      case 'edited_message': return handleMessage(u[u.type]);
       default: throw new Errors(3, 'Unhandled update', `type: ${u.type}`);
     }
   } catch (error) {
