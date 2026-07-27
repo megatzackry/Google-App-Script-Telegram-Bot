@@ -3,7 +3,7 @@
 A minimal, ready-to-deploy **`Code.gs`** template for running a Telegram bot entirely on **Google Apps Script** — no server, no hosting bill, no external database. Updates come in over a webhook, and everything (messages, errors, debug info) gets logged straight into a Google Sheet.
 
 This is a **template repository**. Use it as the base for feature-specific bots to spin up a new project from it, then build your own logic on top.
-[Use this template](https://github.com/new?template_name=Google-App-Script-Telegram-Bot-Webhook&template_owner=megatzackry)
+[Use this template](https://github.com/new?template_name=Google-App-Script-Telegram-Bot&template_owner=megatzackry)
 
 ## Table of Contents
 - [What is this?](#what-is-this)
