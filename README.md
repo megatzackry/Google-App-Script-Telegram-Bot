@@ -91,12 +91,6 @@ This repo is meant to be a starting point, not a finished bot. Click **Use this 
 - Fill in the `supergroup` / `private` branches inside `handleMessage()` with your actual logic.
 - Extend `Sheet` or add new sheet tabs as your feature needs somewhere to store data.
 
-## Repository Structure
-
-```
-Code.gs   → the entire bot: webhook entrypoint, Bot/Sheet/Cache/Errors helpers, update routing
-```
-
 ---
 
 Found a bug or have an improvement for the template? Issues and PRs are welcome.
