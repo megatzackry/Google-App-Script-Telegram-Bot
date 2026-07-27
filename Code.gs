@@ -8,7 +8,8 @@ function doPost(e) {
   try {
     switch (u.type) {
       case 'message':
-      case 'edited_message': return handleMessage(u[u.type]);
+      case 'edited_message':        return handleMessage(u[u.type]);
+      case 'callback_query':        return handleCallback(u.callback_query);
       default: throw new Errors(3, 'Unhandled update', `type: ${u.type}`);
     }
   } catch (error) {
@@ -28,8 +29,6 @@ function handleMessage(msg){
   throw new Errors(1, `Recieved bot ${msgType ?? 'unknown'} message`, `msg: ${JSON.stringify(msg[msgType] ?? 'unknown')}`);
 }
 
-
-
 class Update {
   constructor(e) {
     this.raw = JSON.parse(e.postData.contents);
@@ -41,6 +40,7 @@ class Update {
 
 class Bot {
   constructor(bot_id) {
+    this.start = Date.now();
     this.id = String(bot_id);
     this.token = `${this.id}:${PropertiesService.getScriptProperties().getProperty(this.id)}`;
   }
@@ -51,8 +51,8 @@ class Bot {
   }
   
   sleepCheck (sleeps, error) {
-    if ((Date.now() - this.startAt + sleeps) > 5.5 * 60000) {
-      throw new this.errors(2, `Execution limit exceed.\nCanceled sleep for ${sleeps/1000}s`, JSON.stringify(error, null, 1));
+    if ((Date.now() - this.start + sleeps) > 5.5 * 60000) {
+      throw new Errors(2, `Execution limit exceed.\nCanceled sleep for ${sleeps/1000}s`, JSON.stringify(error, null, 1));
     }
     Utilities.sleep(sleeps);
   }
@@ -61,7 +61,7 @@ class Bot {
     try {
       return JSON.parse(UrlFetchApp.fetch(url, params).getContentText());
     } catch (e) {
-      if (i > 2) throw new this.errors(2, JSON.stringify(e, null, 1), url);
+      if (i > 2) throw new Errors(2, JSON.stringify(e, null, 1), url);
       this.sleepCheck(5000 * i, e);
       return this.fetch(url, params, i + 1);
     }
@@ -76,10 +76,10 @@ class Bot {
       this.sleepCheck(retryAfter * 1000, rsp);
       return this.send(pld, end, i + 1);
     } else if (rsp.error_code) {
-      new this.errors(0, end, JSON.stringify(rsp, null, 1)).log(pld);
+      new Errors(0, end, JSON.stringify(rsp, null, 1)).log(pld);
       return rsp;
     } else if (i > 2) {
-      throw new this.errors(3,`Max failed retry ${end}`,JSON.stringify(rsp, null, 1)).log(pld);
+      throw new Errors(3,`Max failed retry ${end}`,JSON.stringify(rsp, null, 1)).log(pld);
     }
     this.sleepCheck(5000 * i, rsp);
     return this.send(pld, end, i + 1);
