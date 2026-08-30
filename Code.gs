@@ -15,8 +15,8 @@ function setup() {
 }
 
 function doPost(e) {
+  const update = JSON.parse(e.postData.contents);
   try {
-    const update = JSON.parse(e.postData.contents);
     const bot = new Telegram();
     if (update.message) {
       const strUpdate = JSON.stringify(update,null,2);
@@ -37,7 +37,7 @@ function doPost(e) {
     }
     throw new Errors(0, `New ${Object.keys(update).find((k) => k !== 'update_id')} updates`, update);
   } catch (error) {
-    Errors.handle(error,e.postData.contents);
+    Errors.handle(error, JSON.stringify(update,null,2) || e.postData.contents);
   }
 }
 
