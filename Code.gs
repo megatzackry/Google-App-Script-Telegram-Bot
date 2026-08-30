@@ -14,9 +14,11 @@ function setup() {
   new Telegram().setWebhook(webapp_url, ['message', 'edited_message', 'callback_query']);
 }
 
+
 function doPost(e) {
   const update = JSON.parse(e.postData.contents);
   try {
+    new Sheet().getss('events').appendRow([new Date(), `Received new ${Object.keys(update).find((k) => k !== 'update_id')} updates`, JSON.stringify(update,null,1)]);
     const bot = new Telegram();
     if (update.message) {
       const strUpdate = JSON.stringify(update,null,2);
@@ -35,7 +37,6 @@ function doPost(e) {
         bot.send({ callback_query_id: update.callback_query.id, text: `You have clicked this button ${count} times!`, show_alert: true }, 'answerCallbackQuery');
       }
     }
-    throw new Errors(0, `New ${Object.keys(update).find((k) => k !== 'update_id')} updates`, update);
   } catch (error) {
     Errors.handle(error, JSON.stringify(update,null,2) || e.postData.contents);
   }
@@ -44,7 +45,7 @@ function doPost(e) {
 class Telegram {
   constructor(bot_id = PropertiesService.getScriptProperties().getProperty('BOT_ID')) {
     this.start = Date.now();
-    if (!bot_id) throw new Errors(3, 'No bot configured', 'Run setup() first to store your bot token.');
+    if (!bot_id) throw new Errors('No bot configured', 'Run setup() first to store your bot token.');
     this.id = String(bot_id);
     this.token = `${this.id}:${PropertiesService.getScriptProperties().getProperty(this.id)}`;
   }
@@ -56,7 +57,7 @@ class Telegram {
 
   sleepCheck (sleeps, error) {
     if ((Date.now() - this.start + sleeps) > 5.5 * 60000) {
-      throw new Errors(2, `Execution limit exceed.\nCanceled sleep for ${sleeps/1000}s`, JSON.stringify(error, null, 1));
+      throw new Errors(`Execution limit exceed.\nCanceled sleep for ${sleeps/1000}s`, JSON.stringify(error, null, 1));
     }
     Utilities.sleep(sleeps);
   }
@@ -65,7 +66,7 @@ class Telegram {
     try {
       return JSON.parse(UrlFetchApp.fetch(url, params).getContentText());
     } catch (e) {
-      if (i > 2) throw new Errors(2, JSON.stringify(e, null, 1), url);
+      if (i > 2) throw new Errors(JSON.stringify(e, null, 1), url);
       this.sleepCheck(5000 * i, e);
       return this.fetch(url, params, i + 1);
     }
@@ -73,17 +74,18 @@ class Telegram {
 
   send (pld, end, i = 1) {
     const rsp = this.fetch(`https://api.telegram.org/bot${this.token}/${end}`, { method: 'post', contentType: 'application/json', payload: JSON.stringify(pld), muteHttpExceptions: true }, i);
-    if (rsp.ok) return rsp;
-    if (rsp.error_code === 429) {
+    if (rsp.ok) {
+      return new Sheet().getss('events').appendRow([new Date(), `Successful ${end}`, '', JSON.stringify(pld, null, 1), JSON.stringify(rsp, null, 1)]);
+    } else if (rsp.error_code === 429) {
       if (i > 2) return rsp;
       const retryAfter = rsp.parameters?.retry_after || 10;
       this.sleepCheck(retryAfter * 1000, rsp);
       return this.send(pld, end, i + 1);
     } else if (rsp.error_code) {
-      new Errors(0, end, JSON.stringify(rsp, null, 1)).log(pld);
+      new Errors(end, JSON.stringify(rsp, null, 1)).log(pld);
       return rsp;
     } else if (i > 2) {
-      throw new Errors(3,`Max failed retry ${end}`,JSON.stringify(rsp, null, 1)).log(pld);
+      throw new Errors(`Max failed retry ${end}`,JSON.stringify(rsp, null, 1)).log(pld);
     }
     this.sleepCheck(5000 * i, rsp);
     return this.send(pld, end, i + 1);
@@ -103,6 +105,11 @@ class Sheet {
       this.ss[s] = this.doc.getSheetByName(s);
       if (!this.ss[s]) {
         this.ss[s] = this.doc.insertSheet(s);
+        const headers = {
+          events: ['Date Time', 'Details', 'Updates', 'Payload', 'Response'],
+          errors: ['Date Time', 'Message', 'Details', 'Payload'],
+        };
+        if (headers[s]) this.ss[s].appendRow(headers[s]);
       }
     }
     return this.ss[s];
@@ -111,9 +118,8 @@ class Sheet {
 };
 
 class Errors extends Error {
-  constructor(flag, message, details) {
+  constructor(message, details) {
     super(message);
-    this.flag = flag;
     this.details = details;
     this.name = this.constructor.name;
     if (Error.captureStackTrace) {
@@ -123,11 +129,11 @@ class Errors extends Error {
   log(u) {
     let str = '';
     try { str = u ? JSON.stringify(u, null, 1) : ''; } catch (e) { str = '[Circular or Unstringifiable Object]'; }
-    new Sheet().getss('events').appendRow([new Date(), this.flag, this.message, this.details, str]);
+    new Sheet().getss('errors').appendRow([new Date(), this.message, this.details, str]);
   }
 
   static handle(error, u) {
     if (error instanceof Errors) return error.log(u);
-    new Errors(3, error.message || 'Unknown Error', error.stack || 'No Stack').log(u);
+    new Errors(error.message || 'Unknown Error', error.stack || 'No Stack').log(u);
   }
 };
