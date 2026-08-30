@@ -11,7 +11,7 @@ function setup() {
   props.setProperty(bot_id, api_key);
 
   console.log(`Stored credentials for bot_id ${bot_id}.`);
-  new Telegram().setWebhook(webapp_url, ['message', 'edited_message']);
+  new Telegram().setWebhook(webapp_url, ['message', 'edited_message', 'callback_query']);
 }
 
 function doPost(e) {
