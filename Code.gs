@@ -14,7 +14,6 @@ function setup() {
   new Telegram().setWebhook(webapp_url, ['message', 'edited_message', 'callback_query']);
 }
 
-
 function doPost(e) {
   const update = JSON.parse(e.postData.contents);
   try {
