@@ -11,7 +11,7 @@ function setup() {
   props.setProperty(bot_id, api_key);
 
   console.log(`Stored credentials for bot_id ${bot_id}.`);
-  new Telegram().setWebhook(webapp_url, ['message', 'edited_message', 'callback_query']);
+  new Telegram().setWebhook(webapp_url, ['message', 'edited_message']);
 }
 
 function doPost(e) {
@@ -24,17 +24,11 @@ function doPost(e) {
       bot.send({
         chat_id: update.message.chat.id, reply_parameters: { message_id: update.message.message_id }, text: strUpdate,
         entities: [{ offset: 0, length: strUpdate.length, type: 'code' }],
-        reply_markup: { inline_keyboard: [[{ text: '0', callback_data: 0}]]},
+        reply_markup: { inline_keyboard: [
+          [{ text: 'Google Sheets', url: 'https://docs.google.com/spreadsheets/d/1vwyo6oE-o_DWO4lPb295v9nonNYVhTuGAgL2jVI1tN8/edit?usp=sharing'}],
+          [{ text: 'GitHub', url: 'https://github.com/megatzackry/Google-App-Script-Telegram-Bot'}],
+        ]},
       }, 'sendMessage');
-    } else if (update.callback_query) {
-      if (update.callback_query.data) {
-        const count = Number(update.callback_query.data) + 1;
-        bot.send({
-          chat_id: update.callback_query.message.chat.id, message_id: update.callback_query.message.message_id,
-          reply_markup: { inline_keyboard: [[{ text: JSON.stringify(count), callback_data: count }]]}
-        }, 'editMessageReplyMarkup');
-        bot.send({ callback_query_id: update.callback_query.id, text: `You have clicked this button ${count} times!`, show_alert: true }, 'answerCallbackQuery');
-      }
     }
   } catch (error) {
     Errors.handle(error, JSON.stringify(update,null,2) || e.postData.contents);
