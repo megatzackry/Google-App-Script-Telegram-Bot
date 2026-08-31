@@ -8,8 +8,8 @@ This is a **template repository**. [Use this template](https://github.com/new?te
 >
 > A working deployment of this exact template is live and open for anyone to try:
 >
-> - **Try the bot** → [@GoogleAppScriptTemplateBot](https://t.me/GoogleAppScriptTemplateBot) — send it a message and tap the counter button.
-> - **Watch it work in real time** → [Open the connected Google Sheet](https://docs.google.com/spreadsheets/d/1vwyo6oE-o_DWO4lPb295v9nonNYVhTuGAgL2jVI1tN8/edit?usp=sharing) — every update the bot receives, and every reply it sends, is logged there live as you interact with it in Telegram.
+> - **Try the bot** → [@GoogleAppScriptTemplateBot](https://t.me/GoogleAppScriptTemplateBot) — send it any message and it'll echo the raw update straight back to you.
+> - **Watch it work in real time** → [Open the connected Google Sheet](https://docs.google.com/spreadsheets/d/1vwyo6oE-o_DWO4lPb295v9nonNYVhTuGAgL2jVI1tN8/edit?usp=sharing) — every update the bot receives, and every reply it sends, is logged there live as you interact with it in Telegram. The bot's own reply also links straight back to this Sheet, plus the [source on GitHub](https://github.com/megatzackry/Google-App-Script-Telegram-Bot).
 
 ## Table of Contents
 - [What is this?](#what-is-this)
@@ -30,11 +30,10 @@ The Sheet itself doubles as your event log, so there's nothing else to provision
 
 `Code.gs` is built around a few small pieces that handle the plumbing, so you can focus on bot logic:
 
-- **`setup()`** — run once to configure your bot. Paste in your full bot token (e.g. `123456789:AAExample-Token`) and your deployed Web app URL, and it splits the token into a bot id/key pair, stores both in Script Properties, and registers the Telegram webhook for you (listening for `message`, `edited_message`, and `callback_query` updates). Run this again any time you rotate your bot token or redeploy to a new URL.
+- **`setup()`** — run once to configure your bot. Paste in your full bot token (e.g. `123456789:AAExample-Token`) and your deployed Web app URL, and it splits the token into a bot id/key pair, stores both in Script Properties, and registers the Telegram webhook for you (listening for `message` and `edited_message` updates). Run this again any time you rotate your bot token or redeploy to a new URL.
 - **`doPost(e)`** — the webhook entrypoint. Every Telegram update hits this function first:
   - It immediately logs a row to the `events` sheet noting which kind of update just came in.
-  - On an incoming `message`, it replies with the full update as a formatted code block, along with an inline keyboard button labeled `0`.
-  - On a `callback_query` (i.e. someone tapping that button), it increments the counter, edits the button's label to the new count, and pops an alert telling the user how many times they've clicked it.
+  - On an incoming `message`, it replies with the full update as a formatted code block, along with inline keyboard link buttons pointing to the project's Google Sheet and GitHub repo.
   - Any error thrown along the way is caught and logged via `Errors.handle()`.
 - **`Telegram`** — a wrapper around the Telegram Bot API (`send`, `setWebhook`, etc.) that includes:
   - Automatic retries for failed or dropped requests.
@@ -90,7 +89,7 @@ Because every update logs an `events` row on the way in and every outgoing API c
 
 ### 6. Test It
 1. Once execution completes, open your bot in Telegram and send a message.
-2. If the bot was set up correctly, it will reply with the entire update it received, plus a `0` button underneath — tap it a few times and watch the count (and the alert) go up.
+2. If the bot was set up correctly, it will reply with the entire update it received, plus a couple of link buttons underneath pointing back to the project's Sheet and GitHub repo.
 3. Check your Google Sheet — an **`events`** tab (with a header row already in place) will appear, logging both the incoming update and the bot's outgoing reply. If anything goes wrong, look for a matching **`errors`** tab instead.
 
 ---
@@ -103,7 +102,7 @@ Because every update logs an `events` row on the way in and every outgoing API c
 ## Using This as a Template
 
 This repo is meant to be a starting point, not a finished bot. Click **Use this template** on GitHub to create a new repository from it, then:
-- Replace the demo logic inside `doPost()` — the echoed update and click-counter button — with your actual message and callback handling.
+- Replace the demo logic inside `doPost()` — the echoed update and link buttons — with your actual message and callback handling.
 - Extend the `Sheet` class or add new sheet tabs as your feature needs somewhere to store data.
 
 ---
