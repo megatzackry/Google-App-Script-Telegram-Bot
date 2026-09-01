@@ -98,8 +98,8 @@ Because every update logs an `events` row on the way in and every outgoing API c
 
 ## External References
 
-[Google App Script](https://developers.google.com/apps-script/reference)
-[Telegram Bot API](https://core.telegram.org/bots/api#getting-updates)
+[Google App Script](https://developers.google.com/apps-script/reference)  
+[Telegram Bot API](https://core.telegram.org/bots/api#getting-updates)  
 
 ## Using This as a Template
 
